@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 16px; max-width: 480px; margin: 0 auto; }
+    h2 { color: #1F4E78; }
+    #reader { width: 100%; margin-bottom: 12px; }
+    .card { background: #f0f4f8; border-radius: 8px; padding: 12px; margin-bottom: 12px; display: none; }
+    .card.show { display: block; }
+    label { display: block; margin-top: 10px; font-weight: bold; font-size: 14px; }
+    input { width: 100%; padding: 8px; margin-top: 4px; box-sizing: border-box; font-size: 14px; }
+    button { margin-top: 16px; width: 100%; padding: 12px; background: #1F4E78; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; }
+    button:disabled { background: #ccc; }
+    .msg { padding: 10px; border-radius: 6px; margin-top: 10px; }
+    .msg.error { background: #fde2e2; color: #a94442; }
+    .msg.success { background: #d4edda; color: #155724; }
+  </style>
+</head>
+<body>
+  <h2>Scan Buku Masuk</h2>
+  <div id="reader"></div>
+
+  <label>Atau ketik ISBN manual</label>
+  <input type="text" id="manualIsbn" placeholder="Ketik ISBN lalu Enter">
+
+  <div id="bookCard" class="card">
+    <div><strong id="judulBuku"></strong></div>
+    <div id="penulisBuku" style="color:#555; font-size:14px;"></div>
+  </div>
+
+  <div id="formArea" style="display:none;">
+    <label>Tanggal Masuk</label>
+    <input type="date" id="tanggalMasuk">
+    <label>Jumlah Masuk</label>
+    <input type="number" id="jumlahMasuk" min="1" value="1">
+    <label>Diinput Oleh</label>
+    <input type="text" id="diinputOleh" placeholder="Nama kamu">
+    <label>Sumber/Catatan</label>
+    <input type="text" id="sumberCatatan" placeholder="Opsional">
+    <button id="btnSimpan" onclick="simpan()">Simpan</button>
+  </div>
+
+  <div id="msgBox"></div>
+
+  <script>
+    const API_URL = https://script.google.com/macros/library/d/15-J9ulqsr0hYlhshgxfHq1AReq7OCCHEZ2T8PLSn_0oJVOPCdy1cHGiG/2;
+    let currentIsbn = null;
+    let currentJudul = null;
+
+    document.getElementById('tanggalMasuk').valueAsDate = new Date();
+
+    const html5QrCode = new Html5Qrcode("reader");
+    html5QrCode.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 250, height: 120 } },
+      (decodedText) => cariBuku(decodedText)
+    ).catch(err => showMsg('Kamera tidak bisa diakses: ' + err, 'error'));
+
+    document.getElementById('manualIsbn').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') cariBuku(this.value.trim());
+    });
+
+    function cariBuku(isbn) {
+      if (!isbn) return;
+      showMsg('Mencari ISBN ' + isbn + ' ...', 'success');
+      fetch(API_URL + '?action=search&isbn=' + encodeURIComponent(isbn))
+        .then(res => res.json())
+        .then(result => {
+          if (result.found) {
+            currentIsbn = isbn;
+            currentJudul = result.judul;
+            document.getElementById('judulBuku').innerText = result.judul;
+            document.getElementById('penulisBuku').innerText = result.penulis + ' — ' + result.penerbit;
+            document.getElementById('bookCard').classList.add('show');
+            document.getElementById('formArea').style.display = 'block';
+            document.getElementById('msgBox').innerHTML = '';
+          } else {
+            document.getElementById('bookCard').classList.remove('show');
+            document.getElementById('formArea').style.display = 'none';
+            showMsg('ISBN "' + isbn + '" tidak ditemukan di Master Data Buku.', 'error');
+          }
+        })
+        .catch(err => showMsg('Error: ' + err, 'error'));
+    }
+
+    function simpan() {
+      const btn = document.getElementById('btnSimpan');
+      btn.disabled = true;
+      btn.innerText = 'Menyimpan...';
+
+      const params = new URLSearchParams({
+        action: 'save',
+        isbn: currentIsbn,
+        judul: currentJudul,
+        tanggal: document.getElementById('tanggalMasuk').value,
+        jumlah: document.getElementById('jumlahMasuk').value,
+        diinput: document.getElementById('diinputOleh').value,
+        sumber: document.getElementById('sumberCatatan').value
+      });
+
+      fetch(API_URL + '?' + params.toString())
+        .then(res => res.json())
+        .then(result => {
+          showMsg('Tersimpan: ' + result.judul, 'success');
+          resetForm();
+          btn.disabled = false;
+          btn.innerText = 'Simpan';
+        })
+        .catch(err => {
+          showMsg('Gagal simpan: ' + err, 'error');
+          btn.disabled = false;
+          btn.innerText = 'Simpan';
+        });
+    }
+
+    function resetForm() {
+      currentIsbn = null;
+      currentJudul = null;
+      document.getElementById('bookCard').classList.remove('show');
+      document.getElementById('formArea').style.display = 'none';
+      document.getElementById('manualIsbn').value = '';
+      document.getElementById('jumlahMasuk').value = 1;
+      document.getElementById('sumberCatatan').value = '';
+    }
+
+    function showMsg(text, type) {
+      document.getElementById('msgBox').innerHTML = '<div class="msg ' + type + '">' + text + '</div>';
+    }
+  </script>
+</body>
+</html>
