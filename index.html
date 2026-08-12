@@ -3,7 +3,7 @@
 <head>
   <base target="_top">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; padding: 16px; max-width: 480px; margin: 0 auto; }
     h2 { color: #1F4E78; }
@@ -52,12 +52,16 @@
 
     document.getElementById('tanggalMasuk').valueAsDate = new Date();
 
-    const html5QrCode = new Html5Qrcode("reader");
-    html5QrCode.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: { width: 250, height: 120 } },
-      (decodedText) => cariBuku(decodedText)
-    ).catch(err => showMsg('Kamera tidak bisa diakses: ' + err, 'error'));
+    if (typeof Html5Qrcode === 'undefined') {
+  showMsg('Gagal memuat modul scanner. Coba refresh halaman / cek koneksi internet.', 'error');
+} else {
+  const html5QrCode = new Html5Qrcode("reader");
+  html5QrCode.start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: { width: 250, height: 120 } },
+    (decodedText) => cariBuku(decodedText)
+  ).catch(err => showMsg('Kamera tidak bisa diakses: ' + err, 'error'));
+}
 
     document.getElementById('manualIsbn').addEventListener('keypress', function(e) {
       if (e.key === 'Enter') cariBuku(this.value.trim());
