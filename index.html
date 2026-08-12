@@ -138,7 +138,7 @@ function mulaiScan() {
       fetch(API_URL + '?' + params.toString())
         .then(res => res.json())
         .then(result => {
-          showMsg('Tersimpan: ' + result.judul, 'success');
+          showMsg('Tersimpan: ' + currentJudul, 'success');
           resetForm();
           btn.disabled = false;
           btn.innerText = 'Simpan';
