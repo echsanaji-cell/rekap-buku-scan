@@ -18,6 +18,11 @@
     .msg { padding: 10px; border-radius: 6px; margin-top: 10px; }
     .msg.error { background: #fde2e2; color: #a94442; }
     .msg.success { background: #d4edda; color: #155724; }
+    .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; }
+    .modal-overlay.show { display:flex; }
+    .modal-box { background:#fff; border-radius:10px; padding:20px; width:85%; max-width:380px; max-height:85vh; overflow-y:auto; position:relative; }
+    .modal-close { position:absolute; top:8px; right:12px; background:none; border:none; font-size:22px; cursor:pointer; color:#888; width:auto; padding:0; margin:0; }
+  </style>
   </style>
 </head>
 <body>
@@ -28,21 +33,25 @@
   <label>Atau ketik ISBN manual</label>
   <input type="text" id="manualIsbn" placeholder="Ketik ISBN lalu Enter">
 
-  <div id="bookCard" class="card">
-    <div><strong id="judulBuku"></strong></div>
-    <div id="penulisBuku" style="color:#555; font-size:14px;"></div>
-  </div>
-
-  <div id="formArea" style="display:none;">
-    <label>Tanggal Masuk</label>
-    <input type="date" id="tanggalMasuk">
-    <label>Jumlah Masuk</label>
-    <input type="number" id="jumlahMasuk" min="1" value="1">
-    <label>Diinput Oleh</label>
-    <input type="text" id="diinputOleh" placeholder="Nama kamu">
-    <label>Sumber/Catatan</label>
-    <input type="text" id="sumberCatatan" placeholder="Opsional">
-    <button id="btnSimpan" onclick="simpan()">Simpan</button>
+  <div id="scanModal" class="modal-overlay">
+    <div class="modal-box">
+      <button class="modal-close" onclick="tutupModal()">✕</button>
+      <div id="bookCard" class="card show">
+        <div><strong id="judulBuku"></strong></div>
+        <div id="penulisBuku" style="color:#555; font-size:14px;"></div>
+      </div>
+      <div id="formArea">
+        <label>Tanggal Masuk</label>
+        <input type="date" id="tanggalMasuk">
+        <label>Jumlah Masuk</label>
+        <input type="number" id="jumlahMasuk" min="1" value="1">
+        <label>Diinput Oleh</label>
+        <input type="text" id="diinputOleh" placeholder="Nama kamu">
+        <label>Sumber/Catatan</label>
+        <input type="text" id="sumberCatatan" placeholder="Opsional">
+        <button id="btnSimpan" onclick="simpan()">Simpan</button>
+      </div>
+    </div>
   </div>
 
   <div id="msgBox"></div>
@@ -103,12 +112,9 @@ function mulaiScan() {
             currentJudul = result.judul;
             document.getElementById('judulBuku').innerText = result.judul;
             document.getElementById('penulisBuku').innerText = result.penulis + ' — ' + result.penerbit;
-            document.getElementById('bookCard').classList.add('show');
-            document.getElementById('formArea').style.display = 'block';
+            document.getElementById('scanModal').classList.add('show');
             document.getElementById('msgBox').innerHTML = '';
           } else {
-            document.getElementById('bookCard').classList.remove('show');
-            document.getElementById('formArea').style.display = 'none';
             showMsg('ISBN "' + isbn + '" tidak ditemukan di Master Data Buku.', 'error');
           }
         })
@@ -145,11 +151,14 @@ function mulaiScan() {
         });
     }
 
+    function tutupModal() {
+      document.getElementById('scanModal').classList.remove('show');
+    }
+
     function resetForm() {
       currentIsbn = null;
       currentJudul = null;
-      document.getElementById('bookCard').classList.remove('show');
-      document.getElementById('formArea').style.display = 'none';
+      document.getElementById('scanModal').classList.remove('show');
       document.getElementById('manualIsbn').value = '';
       document.getElementById('jumlahMasuk').value = 1;
       document.getElementById('sumberCatatan').value = '';
