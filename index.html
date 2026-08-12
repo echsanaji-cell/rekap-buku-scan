@@ -129,27 +129,13 @@ function mulaiScan() {
       const params = new URLSearchParams({
         action: 'save',
         isbn: currentIsbn,
-        judul: currentJudul,
         tanggal: document.getElementById('tanggalMasuk').value,
         jumlah: document.getElementById('jumlahMasuk').value,
         diinput: document.getElementById('diinputOleh').value,
         sumber: document.getElementById('sumberCatatan').value
       });
 
-      const payload = {
-        isbn: currentIsbn,
-        judul: currentJudul,
-        tanggal: document.getElementById('tanggalMasuk').value,
-        jumlah: document.getElementById('jumlahMasuk').value,
-        diinput: document.getElementById('diinputOleh').value,
-        sumber: document.getElementById('sumberCatatan').value
-      };
-
-      fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload)
-      })
+      fetch(API_URL + '?' + params.toString())
         .then(res => res.json())
         .then(result => {
           showMsg('Tersimpan: ' + result.judul, 'success');
