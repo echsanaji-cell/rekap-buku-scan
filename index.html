@@ -48,7 +48,7 @@
   <div id="msgBox"></div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/library/d/15-J9ulqsr0hYlhshgxfHq1AReq7OCCHEZ2T8PLSn_0oJVOPCdy1cHGiG/2";
+    const API_URL = "https://script.google.com/macros/s/AKfycbxtRPd1DQrtei0sZQiWJwfz7B2N34dyKbE84VoDBEwHOOdaeOrasamVpE7tr4ZYjbf6zA/exec";
     let currentIsbn = null;
     let currentJudul = null;
 
@@ -69,7 +69,7 @@ function mulaiScan() {
     { facingMode: "environment" },
     {
       fps: 10,
-      qrbox: { width: 280, height: 150 },
+      qrbox: { width: 300, height: 120 },
       formatsToSupport: [
         Html5QrcodeSupportedFormats.EAN_13,
         Html5QrcodeSupportedFormats.EAN_8,
