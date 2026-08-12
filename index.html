@@ -4,6 +4,7 @@
   <base target="_top">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script>const { Html5QrcodeSupportedFormats } = window;</script>
   <style>
     body { font-family: Arial, sans-serif; padding: 16px; max-width: 480px; margin: 0 auto; }
     h2 { color: #1F4E78; }
@@ -66,7 +67,17 @@ function mulaiScan() {
   html5QrCode = new Html5Qrcode("reader");
   html5QrCode.start(
     { facingMode: "environment" },
-    { fps: 10, qrbox: { width: 250, height: 120 } },
+    {
+      fps: 10,
+      qrbox: { width: 280, height: 150 },
+      formatsToSupport: [
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.UPC_A,
+        Html5QrcodeSupportedFormats.QR_CODE
+      ]
+    },
     (decodedText) => cariBuku(decodedText)
   ).then(() => {
     document.getElementById('btnScan').innerText = 'Kamera aktif';
